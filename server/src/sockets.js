@@ -1,63 +1,85 @@
 const socketIO = require('socket.io');
 
-const db = require('./db');
+const { usersDB } = require('./db');
+
+const { chooseDrawer, resetDrawer } = require('./game-logic/choose-drawer/chooseDrawer');
+const getWords = require('./game-logic/words/randomWords');
 
 module.exports = server => {
   const io = socketIO(server);
 
   let connections = [];
-
-  const users = {};
+  let pathCoordinates = [];
+  const gameRunning = false;
+  const setupData = {};
 
   io.on('connection', async socket => {
     connections = await getTotalConnections();
     console.log('Users: ', connections);
 
-    setDrawer(socket);
-
-    function draw(coordinates) {
-      socket.broadcast.emit('drawCoordinates', coordinates);
+    if (connections.length > 2) {
+      setupData.pathCoordinates = pathCoordinates;
     }
 
-    function preset(name) {
-      users[socket.id] = name;
+    startGame();
+
+    function draw(coordinates) {
+      pathCoordinates.push(coordinates);
+
+      socket.broadcast.emit('drawCoordinates', coordinates);
     }
 
     async function disconnect() {
       console.log('user diconnected', socket.id);
       connections = await getTotalConnections();
 
-      console.log('Delete', users[socket.id]);
-      db.remove({ name: users[socket.id] });
+      usersDB.remove({ socketId: socket.id });
 
-      setNewDrawer(socket);
+      playerDisconnected();
     }
 
     socket.on('draw', draw);
-    socket.on('preset', preset);
     socket.on('disconnect', disconnect);
   });
 
-  function setDrawer(socket) {
-    if (connections.length === 1) {
-      socket.emit('setDrawer', true);
+  async function startGame() {
+    if (connections.length >= 2) {
+      const players = await getPlayers('name');
+      const drawerId = chooseDrawer(connections);
+
+      setupData.players = players;
+
+      io.emit('game-start', setupData);
+
+      io.to(drawerId).emit('set-drawer', getWords());
     }
   }
 
-  function setNewDrawer(socket) {
-    // TODO: Fix selecting new drawer
-    if (connections.length === 1) {
-      setDrawer(socket);
-      return;
+  async function playerDisconnected() {
+    const players = await getPlayers('name');
+    let notEnoughPlayers = false;
+
+    if (connections.length < 2) {
+      pathCoordinates = [];
+
+      notEnoughPlayers = true;
+      resetDrawer();
     }
 
-    socket.emit('setDrawer', true);
-    socket.broadcast.emit('setDrawer', false);
+    io.emit('player-disconnected', {
+      notEnoughPlayers,
+      players,
+    });
   }
 
-  function getRandomID() {
-    const random = Math.floor(Math.random() * connections.length - 1);
-    return connections[random];
+  async function getPlayers(property) {
+    const players = await usersDB.find({});
+
+    if (!property) {
+      return players;
+    }
+
+    return players.map(player => player[property]);
   }
 
   function getTotalConnections() {
