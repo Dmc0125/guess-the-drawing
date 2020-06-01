@@ -7,6 +7,7 @@
 <style lang="sass" scoped>
 header
   width: 100%
+  height: 140px
   padding: 2rem 0
 
   text-align: center
@@ -14,5 +15,4 @@ header
 h1
   font-size: 4rem
   font-weight: 500
-  color: #f6f6f6
 </style>

@@ -25,6 +25,21 @@ export const getPlayers = async () => {
   return players.map(({ name }) => name);
 };
 
+export const updatePlayerID = async (name, socketId) => {
+  const res = await fetch(`${API_URL}/players`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      name,
+      socketId,
+    }),
+  });
+
+  await checkError(res);
+};
+
 export const deletePlayer = async name => {
   const res = await fetch(`${API_URL}/players`, {
     method: 'DELETE',

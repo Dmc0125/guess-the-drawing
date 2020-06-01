@@ -1,20 +1,34 @@
 <template>
-  <form @submit.prevent="submitName">
-    <input type="text" v-model="name" placeholder="Name">
-    <button type="submit">Play</button>
-  </form>
+  <section class="login">
+    <form @submit.prevent="submitName" v-if="!isLoading">
+      <input type="text" v-model="name" placeholder="Name">
+      <button type="submit">Play</button>
+    </form>
+    <loading-spinner v-else />
+  </section>
 </template>
 
 <script>
-import { ref } from '@vue/composition-api';
+import { ref, onUnmounted } from '@vue/composition-api';
+import { useActions, useGetters, useRouter } from '@u3u/vue-hooks';
+import io from 'socket.io-client';
 
-import { logIn } from '@/api/API_URL';
+import { logIn, updatePlayerID, API_URL } from '@/api/API';
 import { isValid } from '@/helpers/validateName';
-import { setName } from '@/store/global';
+import { setItemToStorage } from '@/helpers/sessionStorage';
+
+import LoadingSpinner from '@/components/loading-spinner/LoadingSpinner.vue';
 
 export default {
-  name: 'App',
-  setup(_, { root }) {
+  components: {
+    LoadingSpinner,
+  },
+  setup() {
+    const { router } = useRouter();
+    const getters = useGetters(['getSocket', 'getPlayers']);
+    const actions = useActions(['setName', 'setSocket', 'setPlayers', 'setPathCoordinates']);
+
+    const isLoading = ref(false);
     const name = ref('');
 
     async function submitName() {
@@ -24,18 +38,52 @@ export default {
       }
 
       try {
-        await logIn(name.value);
+        isLoading.value = true;
 
-        setName(name.value);
-        sessionStorage.setItem('name', name.value);
-        root.$router.push({ path: '/game' });
+        await logIn(name.value);
+        actions.setName(name.value);
+        setItemToStorage('name', name.value);
+
+        const socket = io(API_URL);
+        actions.setSocket(socket);
+
+        socket.on('connect', async () => {
+          try {
+            await updatePlayerID(name.value, socket.id);
+          } catch (err) {
+            console.log(err);
+          }
+        });
+
+        socket.on('game-start', startGame);
       } catch (error) {
         console.log(error);
+        isLoading.value = false;
       }
     }
 
+    function startGame({ players, pathCoordinates }) {
+      actions.setPlayers(players);
+
+      if (pathCoordinates && Array.isArray(pathCoordinates)) {
+        actions.setPathCoordinates(pathCoordinates);
+      }
+
+      console.log(getters.getPlayers.value);
+
+      isLoading.value = false;
+      router.push({ path: '/game' });
+    }
+
+    onUnmounted(() => {
+      if (getters.getSocket.value) {
+        getters.getSocket.value.off('game-start', startGame);
+      }
+    });
+
     return {
       name,
+      isLoading,
       submitName,
     };
   },
@@ -43,27 +91,30 @@ export default {
 </script>
 
 <style lang="sass" scoped>
-form
+.login
   width: 100%
-  margin-top: 150px
+  height: 100%
+  padding-top: 100px
 
   display: flex
-  align-items: center
   justify-content: center
+
+form
+  display: flex
 
 input
   width: 300px
   height: 2.5rem
   padding: 1rem
 
-  background: #162736
-  color: #fff
+  background: $primary-darker
+  color: $font-light
   font-size: 1rem
   border-radius: 5px
 
   &::placeholder
     font-size: 1rem
-    color: #708594
+    color: $font-light
     opacity: 1
 
 button
@@ -72,18 +123,20 @@ button
   margin-left: 1rem
   padding: 1rem
 
-  background: #162736
-  border: 1px solid #708594
+  background: none
+  border: 2px solid $red
   border-radius: 5px
-  color: #708594
+  color: $red
   font-size: 1rem
+  font-weight: 500
   cursor: pointer
+  transition: all 200ms ease-in-out
 
   display: flex
   align-items: center
   justify-content: center
 
   &:hover
-    background: #708594
-    color: #162736
+    background: $red
+    color: $primary
 </style>

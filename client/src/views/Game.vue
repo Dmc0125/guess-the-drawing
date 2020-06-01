@@ -1,63 +1,71 @@
 <template>
-  <main>
-    <cnv-drawing v-if="getIsDrawing()" />
-    <cnv-not-drawing v-else />
+  <main class="dashboard">
+    <section v-if="!isLoading">
+      <canvas-drawer v-if="getIsDrawing" />
+      <canvas-guesser v-else />
+    </section>
+    <loading-spinner v-else></loading-spinner>
   </main>
 </template>
 
 <script>
-import socketIO from 'socket.io-client';
-import { onUnmounted, onMounted } from '@vue/composition-api';
+import { onUnmounted, ref } from '@vue/composition-api';
+import { useGetters, useActions } from '@u3u/vue-hooks';
 
-import { deletePlayer, API_URL } from '@/api/API_URL';
-import { setSocket, getSocket } from '@/store/socket';
-import { setIsDrawing, getIsDrawing } from '@/store/drawingState';
-import { getName } from '@/store/global';
-
-import CnvDrawing from '@/components/canvas/CanvasDrawing.vue';
-import CnvNotDrawing from '@/components/canvas/CanvasNotDrawing.vue';
+import CanvasDrawer from '@/components/canvas/CanvasDrawer.vue';
+import CanvasGuesser from '@/components/canvas/CanvasGuesser.vue';
+import LoadingSpinner from '@/components/loading-spinner/LoadingSpinner.vue';
 
 export default {
-  name: 'App',
   components: {
-    CnvDrawing,
-    CnvNotDrawing,
+    CanvasDrawer,
+    CanvasGuesser,
+    LoadingSpinner,
   },
   setup() {
-    const io = socketIO.connect(API_URL);
-    setSocket(io);
+    const getters = useGetters(['getSocket', 'getIsDrawing']);
+    const actions = useActions(['setIsDrawing', 'setPlayers']);
 
-    getSocket().emit('preset', getName());
+    const isLoading = ref(false);
 
-    io.on('setDrawer', isDrawing => {
-      if (isDrawing && getIsDrawing()) return;
-
-      if (isDrawing) {
-        console.log('You are drawing');
-        setIsDrawing(true);
-        return;
-      }
-
-      setIsDrawing(false);
+    getters.getSocket.value.on('game-start', players => {
+      actions.setPlayers(players);
+      isLoading.value = false;
     });
 
-    onMounted(() => {
-      window.addEventListener('unload', clearStorage);
+    getters.getSocket.value.on('set-drawer', words => {
+      actions.setIsDrawing(true);
+
+      console.log('Im drawing');
+      console.log(words);
+    });
+
+    getters.getSocket.value.on('player-disconnected', ({ notEnoughPlayers, players }) => {
+      if (notEnoughPlayers) {
+        isLoading.value = true;
+      }
+
+      actions.setPlayers(players);
     });
 
     onUnmounted(() => {
-      io.disconnect();
-
-      window.removeEventListener('unload', clearStorage);
+      getters.getSocket.value.disconnect();
     });
 
-    async function clearStorage() {
-      sessionStorage.clear();
-    }
-
     return {
-      getIsDrawing,
+      getIsDrawing: getters.getIsDrawing,
+      isLoading,
     };
   },
 };
 </script>
+
+<style lang="sass" scoped>
+.dashboard
+  width: 100%
+  height: 100%
+  padding-top: 100px
+
+  display: flex
+  justify-content: center
+</style>
