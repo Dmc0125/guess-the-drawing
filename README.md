@@ -10,13 +10,12 @@ Browser game where players are guessing what is being drawn
 
 # Setup for development
 
-## Frontend
+### Frontend
 
 - Install dependencies `npm i`
 - Run `npm run serve`
 
-## Backend
+### Backend
 
 - Install dependencies `npm i`
-- Start mongodb with `npm run mongod`
 - Run `npm run dev`
