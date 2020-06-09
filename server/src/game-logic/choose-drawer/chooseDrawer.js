@@ -1,4 +1,6 @@
-let drawer = 0;
+const generateRandomNum = require('../../utils/randomNum');
+
+let drawer = generateRandomNum(1, 0);
 
 const chooseDrawer = connections => {
   const drawerId = connections[drawer];

@@ -1,11 +1,11 @@
 const express = require('express');
-const Filter = require('bad-words');
 
 const { usersDB } = require('../../db.js');
-const { sendError, messageTypes } = require('./errorMessages');
+const isValid = require('../../utils/isValid');
+const sendError = require('../../utils/sendError');
+const messagesTypes = require('../../constants/messagesTypes');
 
 const router = express.Router();
-const filter = new Filter();
 
 const getHandler = async (req, res) => {
   if (req.query.name && isValid(req.query.name)) {
@@ -32,20 +32,21 @@ const postHandler = async (req, res, next) => {
   const { name } = req.body;
 
   if (!isValid(name)) {
-    sendError(next, res, 422, messageTypes.NOT_VALID);
+    sendError(next, res, 422, messagesTypes.NOT_VALID);
     return;
   }
 
   const foundName = await findName(name);
 
   if (foundName) {
-    sendError(next, res, 409, messageTypes.ALREADY_EXISTS);
+    sendError(next, res, 409, messagesTypes.ALREADY_EXISTS);
     return;
   }
 
   usersDB.insert({
     name,
     points: 0,
+    isDrawer: false,
   });
 
   res.json({
@@ -59,7 +60,7 @@ const patchHandler = async (req, res, next) => {
   const foundName = await findName(name);
 
   if (!foundName) {
-    sendError(next, res, 404, messageTypes.NOT_FOUND);
+    sendError(next, res, 404, messagesTypes.NOT_FOUND);
     return;
   }
 
@@ -74,12 +75,10 @@ const patchHandler = async (req, res, next) => {
 const deleteHandler = async (req, res, next) => {
   const { name } = req.body;
 
-  console.log(name);
-
   const foundName = await findName(name);
 
   if (!foundName) {
-    sendError(next, res, 404, messageTypes.NOT_FOUND);
+    sendError(next, res, 404, messagesTypes.NOT_FOUND);
     return;
   }
 
@@ -92,13 +91,6 @@ const deleteHandler = async (req, res, next) => {
 async function findName(name) {
   const user = await usersDB.findOne({ name });
   return user;
-}
-
-function isValid(name) {
-  return name
-    && name.toString().trim().length >= 3
-    && name.toString().trim().length <= 20
-    && !filter.isProfane(name);
 }
 
 router.get('/', getHandler);

@@ -1,5 +1,8 @@
 module.exports = {
   env: {
+    commonjs: true,
+    es6: true,
+    node: true,
     jest: true,
   },
   extends: 'airbnb-base',
@@ -11,7 +14,7 @@ module.exports = {
     camelcase: 0,
     'arrow-parens': 0,
     'no-plusplus': 0,
-    'no-unused-vars': 0,
+    'no-unused-vars': 'warn',
     'no-console': 0,
     'no-use-before-define': 0,
     'no-irregular-whitespace': 0,

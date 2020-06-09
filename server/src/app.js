@@ -5,7 +5,7 @@ const cors = require('cors');
 
 require('dotenv').config();
 
-const players = require('./router/players/api');
+const api = require('./api');
 const middlewares = require('./middlewares');
 
 const app = express();
@@ -21,7 +21,7 @@ app.get('/', (req, res) => {
   });
 });
 
-app.use('/players', players);
+app.use('/api', api);
 
 app.use(middlewares.notFound);
 app.use(middlewares.errorHandler);

@@ -1,8 +1,8 @@
 <template>
   <div class="app">
-    <vue-header />
+    <VueHeader />
     <main class="app-wrapper">
-      <router-view></router-view>
+      <RouterView></RouterView>
     </main>
   </div>
 </template>
@@ -13,7 +13,7 @@ import { useGetters } from '@u3u/vue-hooks';
 
 import { clearStorage } from '@/helpers/sessionStorage';
 
-import VueHeader from './components/header/Header.vue';
+import VueHeader from '@/components/header/VueHeader.vue';
 
 export default {
   components: {
@@ -45,7 +45,6 @@ export default {
   box-sizing: border-box
 
   font-family: 'Rubik', sans-serif
-  color: $font-light
 
 html,
 body
@@ -54,6 +53,12 @@ body
 
 body
   background-color: $primary
+
+body,
+input,
+button,
+::placeholder
+  color: $font-light
 
 .app
   width: 100%

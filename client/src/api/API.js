@@ -3,7 +3,7 @@ import CustomError from './customError';
 export const API_URL = 'http://localhost:5000';
 
 export const logIn = async name => {
-  const res = await fetch(`${API_URL}/players`, {
+  const res = await fetch(`${API_URL}/api/players`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -17,7 +17,7 @@ export const logIn = async name => {
 };
 
 export const getPlayers = async () => {
-  const res = await fetch(`${API_URL}/players`);
+  const res = await fetch(`${API_URL}/api/players`);
 
   await checkError(res);
 
@@ -26,7 +26,7 @@ export const getPlayers = async () => {
 };
 
 export const updatePlayerID = async (name, socketId) => {
-  const res = await fetch(`${API_URL}/players`, {
+  const res = await fetch(`${API_URL}/api/players`, {
     method: 'PATCH',
     headers: {
       'Content-Type': 'application/json',
@@ -41,7 +41,7 @@ export const updatePlayerID = async (name, socketId) => {
 };
 
 export const deletePlayer = async name => {
-  const res = await fetch(`${API_URL}/players`, {
+  const res = await fetch(`${API_URL}/api/players`, {
     method: 'DELETE',
     headers: {
       'Content-Type': 'application/json',

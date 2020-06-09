@@ -1,6 +1,6 @@
 const words = require('./words');
+const generateRandomNum = require('../../utils/randomNum');
 
-const generateRandomNum = (max, min = 0) => Math.floor(Math.random() * max) + min;
 
 const getWords = () => {
   let lastIdx;

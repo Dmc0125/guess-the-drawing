@@ -3,7 +3,7 @@ const gameModule = {
     players: [],
   },
   getters: {
-    getPlayers: state => state.players,
+    getPlayers: state => state.players.sort((p1, p2) => p2.points - p1.points),
   },
   actions: {
     addPlayers: (context, playerData) => {

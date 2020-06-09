@@ -1,13 +1,11 @@
 <template>
-  <div>
-    <vue-canvas
-      :mouseDownListener="onMouseDown"
-      :mouseUpListener="onMouseUp"
-      :mouseMoveListener="onMouseMove"
-      :mouseOutListener="onMouseOut"
-      @canvas-resize="redraw"
-    ></vue-canvas>
-  </div>
+  <VueCanvas
+    :mouse-down-listener="onMouseDown"
+    :mouse-up-listener="onMouseUp"
+    :mouse-move-listener="onMouseMove"
+    :mouse-out-listener="onMouseOut"
+    @canvas-resize="redraw"
+  ></VueCanvas>
 </template>
 
 <script>
@@ -82,13 +80,3 @@ export default {
   },
 };
 </script>
-
-<style lang="sass" scoped>
-canvas
-  position: absolute
-  left: 50%
-  top: 50%
-  transform: translate(-50%, -50%)
-
-  border: 1px solid #000
-</style>

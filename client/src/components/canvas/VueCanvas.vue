@@ -1,12 +1,13 @@
 <template>
   <canvas
-    ref="cnvElement"
+    class="vue-canvas"
     :width="`${size.width}px`"
     :height="`${size.height}px`"
     @mousedown="mouseDownListener"
     @mouseup="mouseUpListener"
     @mousemove="mouseMoveListener"
     @mouseout="mouseOutListener"
+    ref="cnvElement"
   ></canvas>
 </template>
 
@@ -40,8 +41,8 @@ export default {
 
     const cnvElement = ref(null);
     const size = reactive({
-      width: '600',
-      height: '600',
+      width: '596',
+      height: '596',
     });
 
     let ctx;
@@ -88,13 +89,13 @@ export default {
       let cnvSize;
 
       if (w >= 1280) {
-        cnvSize = 600;
+        cnvSize = 596;
       } else if (w >= 768) {
-        cnvSize = 500;
+        cnvSize = 496;
       } else if (w >= 460) {
-        cnvSize = 400;
+        cnvSize = 396;
       } else {
-        cnvSize = 310;
+        cnvSize = 306;
       }
 
       size.width = cnvSize;
@@ -116,6 +117,11 @@ export default {
 };
 </script>
 
-<style>
+<style lang="sass" scoped>
+.vue-canvas
+  margin: 0 4rem
+  border: 2px solid $orange
+  border-radius: 10px
 
+  position: relative
 </style>

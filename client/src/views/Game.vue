@@ -1,10 +1,26 @@
 <template>
-  <main class="dashboard">
-    <section v-if="!isLoading">
-      <canvas-drawer v-if="getIsDrawing" />
-      <canvas-guesser v-else />
+  <main class="dashboard-wrapper">
+    <section
+      class="dashboard"
+      v-if="!isLoading"
+      key="game-components"
+    >
+      <PlayersCard />
+      <div class="canvas-wrapper">
+        <CanvasDrawer
+          v-if="getIsDrawing"
+          key="drawer"
+        />
+        <CanvasGuesser
+          v-else
+          key="guesser"
+        />
+      </div>
     </section>
-    <loading-spinner v-else></loading-spinner>
+    <LoadingSpinner
+      v-else
+      key="loading"
+    />
   </main>
 </template>
 
@@ -15,12 +31,14 @@ import { useGetters, useActions } from '@u3u/vue-hooks';
 import CanvasDrawer from '@/components/canvas/CanvasDrawer.vue';
 import CanvasGuesser from '@/components/canvas/CanvasGuesser.vue';
 import LoadingSpinner from '@/components/loading-spinner/LoadingSpinner.vue';
+import PlayersCard from '@/components/players-card/PlayersCard.vue';
 
 export default {
   components: {
     CanvasDrawer,
     CanvasGuesser,
     LoadingSpinner,
+    PlayersCard,
   },
   setup() {
     const getters = useGetters(['getSocket', 'getIsDrawing']);
@@ -61,11 +79,40 @@ export default {
 </script>
 
 <style lang="sass" scoped>
-.dashboard
+.dashboard-wrapper
   width: 100%
-  height: 100%
+  height: fit-content
   padding-top: 100px
 
   display: flex
   justify-content: center
+
+.dashboard
+  width: 100%
+  height: 100%
+
+  display: flex
+  flex-direction: row
+  align-content: center
+  justify-content: center
+
+.canvas-wrapper
+  width: fit-content
+  height: fit-content
+
+@include mobile
+  .canvas-wrapper
+    height: 310px
+
+@include tablet-small
+  .canvas-wrapper
+    height: 400px
+
+@include tablet-large
+  .canvas-wrapper
+    height: 500px
+
+@include desktop
+  .canvas-wrapper
+    height: 600px
 </style>

@@ -1,7 +1,7 @@
 <template>
-  <vue-canvas
+  <VueCanvas
     @canvas-resize="redraw"
-  ></vue-canvas>
+  ></VueCanvas>
 </template>
 
 <script>
@@ -32,13 +32,3 @@ export default {
   },
 };
 </script>
-
-<style lang="sass" scoped>
-canvas
-  position: absolute
-  top: 50%
-  left: 50%
-  transform: translate(-50%, -50%)
-
-  border: 1px solid #000
-</style>

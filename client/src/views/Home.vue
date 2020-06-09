@@ -1,10 +1,17 @@
 <template>
   <section class="login">
-    <form @submit.prevent="submitName" v-if="!isLoading">
-      <input type="text" v-model="name" placeholder="Name">
+    <form
+      v-if="!isLoading"
+      @submit.prevent="submitName"
+    >
+      <input
+        type="text"
+        placeholder="Name"
+        v-model="name"
+      >
       <button type="submit">Play</button>
     </form>
-    <loading-spinner v-else />
+    <LoadingSpinner v-else />
   </section>
 </template>
 
@@ -62,12 +69,12 @@ export default {
       }
     }
 
-    function startGame({ players, pathCoordinates }) {
+    function startGame(players) {
       actions.setPlayers(players);
 
-      if (pathCoordinates && Array.isArray(pathCoordinates)) {
-        actions.setPathCoordinates(pathCoordinates);
-      }
+      // if (pathCoordinates && Array.isArray(pathCoordinates)) {
+      //   actions.setPathCoordinates(pathCoordinates);
+      // }
 
       console.log(getters.getPlayers.value);
 

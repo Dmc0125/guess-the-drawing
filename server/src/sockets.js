@@ -9,22 +9,32 @@ module.exports = server => {
   const io = socketIO(server);
 
   let connections = [];
-  let pathCoordinates = [];
-  const gameRunning = false;
   const setupData = {};
 
+  const gameData = {
+    isRunning: false,
+    pathCoordinates: [],
+    drawerId: null,
+  };
+
   io.on('connection', async socket => {
+    const connectionsBefore = connections;
+
     connections = await getTotalConnections();
     console.log('Users: ', connections);
 
-    if (connections.length > 2) {
-      setupData.pathCoordinates = pathCoordinates;
+    // START THE GAME WHEN 2 FIRST PLAYERS CONNECT
+    if (connectionsBefore.length < 2 && connections.length === 2) {
+      gameData.isRunning = true;
+      startGame();
     }
 
-    startGame();
+    if (connections.length > 2) {
+      setupData.pathCoordinates = gameData.pathCoordinates;
+    }
 
     function draw(coordinates) {
-      pathCoordinates.push(coordinates);
+      gameData.pathCoordinates.push(coordinates);
 
       socket.broadcast.emit('drawCoordinates', coordinates);
     }
@@ -43,24 +53,31 @@ module.exports = server => {
   });
 
   async function startGame() {
-    if (connections.length >= 2) {
-      const players = await getPlayers('name');
-      const drawerId = chooseDrawer(connections);
+    gameData.drawerId = chooseDrawer(connections);
 
-      setupData.players = players;
+    await usersDB.update({}, { $set: { isDrawer: false } });
+    await usersDB.update({ socketId: gameData.drawerId }, { $set: { isDrawer: true } });
 
-      io.emit('game-start', setupData);
+    const players = await usersDB.find({});
 
-      io.to(drawerId).emit('set-drawer', getWords());
-    }
+    console.log(players);
+
+    io.emit('game-start', players);
+
+    io.to(gameData.drawerId).emit('set-drawer', getWords());
   }
+
+  // async function connectToGame() {
+  //   const players = await usersDB.find({});
+
+  // }
 
   async function playerDisconnected() {
     const players = await getPlayers('name');
     let notEnoughPlayers = false;
 
     if (connections.length < 2) {
-      pathCoordinates = [];
+      gameData.pathCoordinates = [];
 
       notEnoughPlayers = true;
       resetDrawer();
